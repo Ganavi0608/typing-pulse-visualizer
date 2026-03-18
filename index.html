@@ -2,99 +2,10 @@
 <html>
 <head>
 <title>Typing Pulse Visualizer</title>
-
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI, sans-serif;
-}
-
-body{
-height:100vh;
-overflow:hidden;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-}
-
-header{
-position:absolute;
-top:20px;
-width:100%;
-text-align:center;
-}
-
-header h1{
-font-size:36px;
-letter-spacing:2px;
-}
-
-header p{
-opacity:0.8;
-margin-top:5px;
-}
-
-#stats{
-position:absolute;
-left:30px;
-top:120px;
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.15);
-padding:25px;
-border-radius:12px;
-backdrop-filter:blur(10px);
-box-shadow:0 0 20px rgba(0,0,0,0.4);
-font-size:18px;
-line-height:2;
-}
-
-#stats span{
-color:#00f7ff;
-font-weight:bold;
-}
-
-canvas{
-display:block;
-}
-
-#startBtn{
-position:absolute;
-bottom:30px;
-left:50%;
-transform:translateX(-50%);
-
-padding:10px 20px;
-font-size:15px;
-color:white;
-cursor:pointer;
-
-/* 👇 make it visible */
-background:rgba(255,255,255,0.15);
-border:1px solid rgba(255,255,255,0.4);
-border-radius:8px;
-
-/* slight glow */
-box-shadow:0 0 10px rgba(0,0,0,0.4);
-
-transition:all 0.2s ease;
-}
-
-/* hover */
-#startBtn:hover{
-background:rgba(255,255,255,0.25);
-border-color:#00f7ff;
-}
-
-/* click */
-#startBtn:active{
-transform:translateX(-50%) scale(0.95);
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
 <header>
 <h1>⌨️ Typing Pulse Visualizer</h1>
 <p>Click Start → then type for music 🎧🔥</p>
