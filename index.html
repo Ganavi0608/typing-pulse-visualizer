@@ -2,78 +2,17 @@
 <html>
 <head>
 <title>Typing Pulse Visualizer</title>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI, sans-serif;
-}
-
-body{
-height:100vh;
-overflow:hidden;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-}
-
-/* header */
-
-header{
-position:absolute;
-top:20px;
-width:100%;
-text-align:center;
-}
-
-header h1{
-font-size:36px;
-letter-spacing:2px;
-}
-
-header p{
-opacity:0.8;
-margin-top:5px;
-}
-
-/* stats card */
-
-#stats{
-position:absolute;
-left:30px;
-top:120px;
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.15);
-padding:25px;
-border-radius:12px;
-backdrop-filter:blur(10px);
-box-shadow:0 0 20px rgba(0,0,0,0.4);
-font-size:18px;
-line-height:2;
-}
-
-#stats span{
-color:#00f7ff;
-font-weight:bold;
-}
-
-/* canvas */
-
-canvas{
-display:block;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
 <header>
 <h1>⌨️ Typing Pulse Visualizer</h1>
-<p>Watch your typing rhythm turn into animated patterns</p>
+<p>Click Start → then type for music 🎧🔥</p>
 </header>
+
+<!-- 🔥 Start Button -->
+<button id="startBtn">Start Music</button>
 
 <div id="stats">
 Keys Pressed: <span id="keyCount">0</span><br>
@@ -101,9 +40,65 @@ let keyText=document.getElementById("keyCount");
 let speedText=document.getElementById("speed");
 let styleText=document.getElementById("style");
 
-/* key press */
+// ================= AUDIO =================
+let audioCtx = null;
 
-document.addEventListener("keydown",function(){
+// 🔥 start audio on button click
+document.getElementById("startBtn").addEventListener("click", () => {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+});
+
+// scale
+const scale = [261.63,293.66,329.63,349.23,392.00,440.00,493.88,523.25];
+
+function playTypingSound(key){
+    if(!audioCtx) return;
+
+    let now = audioCtx.currentTime;
+
+    let index = key.charCodeAt(0) % scale.length;
+    let freq = scale[index] + Math.min(keys*3,300);
+
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain();
+
+    osc.type = ["sine","triangle","square"][Math.floor(Math.random()*3)];
+    osc.frequency.setValueAtTime(freq,now);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    gain.gain.setValueAtTime(0.6,now);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+
+    osc.start(now);
+    osc.stop(now+0.25);
+
+    // bass
+    if(keys%5===0){
+        let bass=audioCtx.createOscillator();
+        let bg=audioCtx.createGain();
+
+        bass.frequency.value=100+Math.random()*50;
+        bass.type="sawtooth";
+
+        bass.connect(bg);
+        bg.connect(audioCtx.destination);
+
+        bg.gain.setValueAtTime(0.7,now);
+        bg.gain.exponentialRampToValueAtTime(0.001,now+0.3);
+
+        bass.start(now);
+        bass.stop(now+0.3);
+    }
+}
+
+// ================= KEY =================
+document.addEventListener("keydown",function(e){
+
+playTypingSound(e.key.toLowerCase());
 
 if(!startTime){
 startTime=Date.now();
@@ -114,12 +109,9 @@ energy+=0.35;
 
 keyText.innerText=keys;
 
-/* calculate WPM */
-
 let minutes=(Date.now()-startTime)/60000;
 
 if(minutes>0){
-
 let wpm=Math.floor((keys/5)/minutes);
 speedText.innerText=wpm;
 
@@ -132,13 +124,11 @@ styleText.innerText="Balanced Typer";
 else{
 styleText.innerText="Speed Typer";
 }
-
 }
 
 });
 
-/* animation */
-
+// ================= ANIMATION =================
 function animate(){
 
 ctx.fillStyle="rgba(0,0,0,0.15)";
@@ -155,27 +145,23 @@ let x1=cx+Math.sin(t)*180;
 let y1=cy+i*5-250;
 
 let x2=cx+Math.sin(t+Math.PI)*180;
-let y2=y1;
 
 let hue=(angle*50+i*3)%360;
 
 ctx.strokeStyle="hsl("+hue+",100%,60%)";
-
 ctx.shadowBlur=12;
 ctx.shadowColor="hsl("+hue+",100%,60%)";
 
 ctx.beginPath();
 ctx.moveTo(x1,y1);
-ctx.lineTo(x2,y2);
+ctx.lineTo(x2,y1);
 ctx.stroke();
-
 }
 
 angle+=0.02+energy;
 energy*=0.93;
 
 requestAnimationFrame(animate);
-
 }
 
 animate();
