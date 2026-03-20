@@ -1,102 +1,103 @@
-body{
+*{
 margin:0;
-height:100vh;
-overflow:hidden;
-
-background:#000;
-color:#00ff00;
-font-family: monospace;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI, sans-serif;
 }
 
-/* HEADER */
+body{
+height:100vh;
+overflow:hidden;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+}
+
+
 header{
 position:absolute;
-top:30px;
+top:20px;
 width:100%;
 text-align:center;
-z-index:2;
 }
 
 header h1{
-font-size:42px;
-color:#00ff00;
-text-shadow:0 0 10px #00ff00;
+font-size:36px;
+letter-spacing:2px;
 }
 
 header p{
-font-size:18px;
-opacity:0.85;
-margin-top:8px;
+opacity:0.8;
+margin-top:5px;
 }
 
-/* LEFT STATS PANEL */
+
 #stats{
 position:absolute;
-left:20px;
+left:30px;
 top:120px;
-
-width:260px;
-
-background:#000;
-border:1px solid #00ff00;
-
+background:rgba(255,255,255,0.08);
+border:1px solid rgba(255,255,255,0.15);
 padding:25px;
-border-radius:8px;
-
+border-radius:12px;
+backdrop-filter:blur(10px);
+box-shadow:0 0 20px rgba(0,0,0,0.4);
 font-size:18px;
-line-height:2.2;
-
-z-index:2;
-
-box-shadow:0 0 20px rgba(0,255,0,0.2);
+line-height:2;
+animation:glow 3s infinite alternate;
 }
 
 #stats span{
-display:block;
-font-size:22px;
+color:#00f7ff;
 font-weight:bold;
-color:#00ff00;
-text-shadow:0 0 6px #00ff00;
 }
 
-/* BUTTON */
-#startBtn{
+@keyframes glow{
+from{
+box-shadow:0 0 10px rgba(0,255,255,0.2);
+}
+to{
+box-shadow:0 0 25px rgba(0,255,255,0.6);
+}
+}
+
+canvas{
+display:block;
+}
+
+button{
 position:absolute;
+padding:10px 20px;
+font-size:15px;
+color:white;
+cursor:pointer;
+background:rgba(255,255,255,0.15);
+border:1px solid rgba(255,255,255,0.4);
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.4);
+transition:all 0.2s ease;
+}
+
+button:hover{
+background:rgba(255,255,255,0.25);
+border-color:#00f7ff;
+}
+
+button:active{
+transform:scale(0.95);
+}
+
+#startBtn{
 bottom:30px;
 left:50%;
 transform:translateX(-50%);
-
-padding:12px 24px;
-font-size:16px;
-
-background:#000;
-color:#00ff00;
-
-border:1px solid #00ff00;
-border-radius:4px;
-
-cursor:pointer;
-
-z-index:2;
-
-transition:0.2s ease;
 }
 
-#startBtn:hover{
-background:#00ff00;
-color:#000;
-box-shadow:0 0 15px #00ff00;
+#resetBtn{
+bottom:30px;
+right:30px;
 }
 
-#startBtn:active{
-transform:translateX(-50%) scale(0.95);
-}
-
-/* CANVAS */
-canvas{
-position:absolute;
-top:0;
-left:0;
-z-index:1;
-background:#000;
+#muteBtn{
+bottom:30px;
+left:30px;
 }
