@@ -2,7 +2,6 @@
 <html>
 <head>
 <title>Typing Pulse Visualizer</title>
-
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -10,142 +9,171 @@
 
 <header>
 <h1>⌨️ Typing Pulse Visualizer</h1>
-<p>Click Start → then type for music 🎧🔥</p>
+<p>Click Start → then type for music 🎧</p>
 </header>
 
 <button id="startBtn">Start Music</button>
+<button id="resetBtn">Reset</button>
+<button id="muteBtn">Mute</button>
 
 <div id="stats">
 Keys Pressed: <span id="keyCount">0</span><br>
 Typing Speed: <span id="speed">0</span> WPM<br>
-Typing Style: <span id="style">Waiting...</span>
+Typing Style: <span id="style">Waiting...</span><br>
+Time: <span id="time">0</span>s
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
 
-function resizeCanvas(){
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let angle=0;
+let energy=0;
+
+let keys=0;
+let startTime=null;
+
+let keyText=document.getElementById("keyCount");
+let speedText=document.getElementById("speed");
+let styleText=document.getElementById("style");
+let timeText=document.getElementById("time");
+
+let audioCtx=null;
+let isMuted=false;
+
+document.getElementById("startBtn").onclick=()=>{
+if(!audioCtx){
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 }
-resizeCanvas();
+};
 
-window.addEventListener("resize", resizeCanvas);
+document.getElementById("muteBtn").onclick=()=>{
+isMuted=!isMuted;
+document.getElementById("muteBtn").innerText=isMuted?"Unmute":"Mute";
+};
 
-let angle = 0;
-let energy = 0;
-
-let keys = 0;
-let startTime = null;
-
-let keyText = document.getElementById("keyCount");
-let speedText = document.getElementById("speed");
-let styleText = document.getElementById("style");
-
-/* AUDIO */
-let audioCtx = null;
-
-document.getElementById("startBtn").addEventListener("click", () => {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-});
-
-/* 🎵 MELODIC SCALE */
-const melodyScale = [
-261.63, // C
-293.66, // D
-329.63, // E
-349.23, // F
-392.00, // G
-440.00, // A
-493.88, // B
-523.25  // C5
-];
+const scale=[261.63,293.66,329.63,349.23,392.00,440.00,493.88,523.25];
 
 function playTypingSound(key){
-    if(!audioCtx) return;
+if(!audioCtx || isMuted) return;
 
-    let now = audioCtx.currentTime;
+let now=audioCtx.currentTime;
+let index=key.charCodeAt(0)%scale.length;
+let freq=scale[index]+Math.min(keys*3,300);
 
-    let index = key.charCodeAt(0) % melodyScale.length;
-    let freq = melodyScale[index];
+let osc=audioCtx.createOscillator();
+let gain=audioCtx.createGain();
 
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
+osc.type=["sine","triangle","square"][Math.floor(Math.random()*3)];
+osc.frequency.setValueAtTime(freq,now);
 
-    osc.type = "sine";
+osc.connect(gain);
+gain.connect(audioCtx.destination);
 
-    osc.frequency.setValueAtTime(freq, now);
+gain.gain.setValueAtTime(0.6,now);
+gain.gain.exponentialRampToValueAtTime(0.001,now+0.25);
 
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now+0.25);
 
-    // smoother musical envelope
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+if(keys%5===0){
+let bass=audioCtx.createOscillator();
+let bg=audioCtx.createGain();
 
-    osc.start(now);
-    osc.stop(now + 0.4);
+bass.frequency.value=100+Math.random()*50;
+bass.type="sawtooth";
+
+bass.connect(bg);
+bg.connect(audioCtx.destination);
+
+bg.gain.setValueAtTime(0.7,now);
+bg.gain.exponentialRampToValueAtTime(0.001,now+0.3);
+
+bass.start(now);
+bass.stop(now+0.3);
+}
 }
 
-/* KEY INPUT */
-document.addEventListener("keydown", function(e){
+document.addEventListener("keydown",(e)=>{
+
+if(e.key.length>1) return;
 
 playTypingSound(e.key.toLowerCase());
 
 if(!startTime){
-startTime = Date.now();
+startTime=Date.now();
 }
 
 keys++;
-energy += 0.4;
+energy+=Math.random()*0.5;
 
-keyText.innerText = keys;
+keyText.innerText=keys;
 
-let minutes = (Date.now() - startTime) / 60000;
+let minutes=(Date.now()-startTime)/60000;
 
-if(minutes > 0){
-let wpm = Math.floor((keys / 5) / minutes);
-speedText.innerText = wpm;
+if(minutes>0){
+let wpm=Math.floor((keys/5)/minutes);
+speedText.innerText=wpm;
 
-if(wpm < 20){
-styleText.innerText = "Calm Thinker";
+if(wpm<20){
+styleText.innerText="Calm Thinker";
 }
-else if(wpm < 40){
-styleText.innerText = "Balanced Typer";
+else if(wpm<40){
+styleText.innerText="Balanced Typer";
 }
 else{
-styleText.innerText = "Speed Typer";
+styleText.innerText="Speed Typer";
 }
 }
 
 });
 
-/* ANIMATION */
+setInterval(()=>{
+if(startTime){
+let seconds=Math.floor((Date.now()-startTime)/1000);
+timeText.innerText=seconds;
+}
+},1000);
+
+document.getElementById("resetBtn").onclick=()=>{
+keys=0;
+startTime=null;
+energy=0;
+
+keyText.innerText=0;
+speedText.innerText=0;
+styleText.innerText="Waiting...";
+timeText.innerText=0;
+};
+
 function animate(){
 
-ctx.fillStyle = "#000";
+ctx.fillStyle="rgba(0,0,0,0.15)";
 ctx.fillRect(0,0,canvas.width,canvas.height);
 
-let cx = canvas.width / 2;
-let cy = canvas.height / 2;
+let cx=canvas.width/2;
+let cy=canvas.height/2;
 
-for(let i = 0; i < 100; i++){
+for(let i=0;i<100;i++){
 
-let t = i * 0.25 + angle;
+let t=i*0.25+angle;
 
-let x1 = cx + Math.sin(t) * 180;
-let y1 = cy + i * 5 - 250;
+let x1=cx+Math.sin(t)*180;
+let y1=cy+i*5-250;
 
-let x2 = cx + Math.sin(t + Math.PI) * 180;
+let x2=cx+Math.sin(t+Math.PI)*180;
 
-ctx.strokeStyle = "rgba(0,255,0,0.8)";
-ctx.shadowBlur = 8;
-ctx.shadowColor = "rgba(0,255,0,0.8)";
+let hue=(angle*50+i*3)%360;
+
+ctx.strokeStyle="hsl("+hue+",100%,60%)";
+ctx.shadowBlur=12;
+ctx.shadowColor="hsl("+hue+",100%,60%)";
 
 ctx.beginPath();
 ctx.moveTo(x1,y1);
@@ -153,8 +181,8 @@ ctx.lineTo(x2,y1);
 ctx.stroke();
 }
 
-angle += 0.02 + energy;
-energy *= 0.93;
+angle+=0.02+energy;
+energy*=0.93;
 
 requestAnimationFrame(animate);
 }
